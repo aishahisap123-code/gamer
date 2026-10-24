@@ -11,10 +11,29 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
+window.addEventListener('keydown', (e) => {
+    keys[e.code] = true;
+
+    if (e.code === 'KeyE') {
+        if (currentRoom === 0 && typeof handleRoom0Interaction ==='function') {
+            handleRoom0Interaction();
+        }
+    }
+});
+window.messageText = "";
+window.messageTimer = 0;
+
 //track key presses
 const keys = {};
-window.addEventListener('keydown', (e) => keys[e.key] = true);
-window.addEventListener('keyup', (e) => keys[e.key] = false);
+window.addEventListener('keydown', (e) => keys[e.code] = true);
+window.addEventListener('keyup', (e) => keys[e.code] = false);
+
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'Escape') {
+        closeNote();
+        closeKeypad();
+    }
+});
 
 //define players
 const player = {
@@ -25,6 +44,8 @@ const player = {
     color: '#4CAF50'
 };
 
+window.player = player;
+
 let currentRoom = 0;
 
 const rooms = [
@@ -34,12 +55,17 @@ const rooms = [
             { x: 0, y: 0, width: canvas.width, height: 20 },
             { x: 0, y: canvas.height - 20, width: canvas.width, height: 20 },
             { x: 0, y: 0, width: 20, height: canvas.height },
-
             { x: canvas.width - 20, y: 0, width: 20, height: 250 },
-            { x: canvas.width - 20, y: 350, width: 20, height: 250 },
+            { x: canvas.width -20, y: 350, width: 20, height: canvas.height -350 },
             { x: 300, y: 200, width: 40, height: 200 }
-        ]
+        ],
 
+        items: [
+            { id: 'desk', x: 120, y: 120, width: 60, height: 60, label: "Old Desk" },
+            { id: 'keypad', x: 400, y: 30, width: 40, height: 20, label: "Wall Keypad" },
+            { id: 'hidingSpot', x: 500, y: 400, width: 40, height: 40, label: "Dark Corner" },
+            { id: 'door', x: canvas.width - 40, y: 250, width: 40, height: 100, label: "Exit Door" }
+        ]
     },
 
     {
@@ -47,10 +73,10 @@ const rooms = [
             { x: 0, y: 0, width: canvas.width, height: 20 },
             { x: 0, y: canvas.height - 20, width: canvas.width, height: 20 },
             { x: 0, y: 0, width: 20, height: 250 },
-            { x: 0, y: 350, width: 20, height: 250 },
+            { x: 0, y: 350, width: 20, height: canvas.height - 350 },
 
             { x: canvas.width - 20, y: 0, width: 20, height: 250 },
-            { x: canvas.width - 20, y: 350, width: 20, height: 250 },
+            { x: canvas.width - 20, y: 350, width: 20, height: canvas.height - 350 },
             { x: 200, y: 100, width: 30, height: 400 }
         ]
     },
@@ -60,10 +86,10 @@ const rooms = [
             { x: 0, y: 0, width: canvas.width, height: 20 },
             { x: 0, y: canvas.height - 20, width: canvas.width, height: 20 },
             { x: 0, y: 0, width: 20, height: 250 },
-            { x: 0, y: 350, width: 20, height: 250 },
+            { x: 0, y: 350, width: 20, height: canvas.height - 350 },
 
             { x: canvas.width - 20, y: 0, width: 20, height: 250 },
-            { x: canvas.width - 20, y: 350, width: 20, height: 250 },
+            { x: canvas.width - 20, y: 350, width: 20, height: canvas.height - 350 },
             { x: 400, y: 150, width: 200, height: 50 },
             { x: 400, y: 400, width: 200, height: 50 }
         ]
@@ -75,7 +101,7 @@ const rooms = [
             { x: 0, y: canvas.height -20, width: canvas.width, height: 20 },
             
             { x: 0, y: 0, width: 20, height: 250 },
-            { x: 0, y: 350, width: 20, height: 250 },
+            { x: 0, y: 350, width: 20, height: canvas.height - 350 },
             { x: canvas.width - 20, y: 0, width: 20, height: canvas.height },
             { x: 250, y: 200, width: 50, height: 200 }
         ]
@@ -98,7 +124,7 @@ function update(deltaTime) {
     if (keys['KeyD'] || keys['ArrowRight']) nextX += player.speed * deltaTime;
 
     function checkCollision(x, y) {
-        for (let wall of walls) {
+        for (let wall of rooms[currentRoom].walls) {
             if (
                 x < wall.x + wall.width &&
                 x + player.size > wall.x &&
@@ -114,8 +140,13 @@ function update(deltaTime) {
     if (!checkCollision(nextX, player.y)) player.x = nextX;
     if (!checkCollision(player.x, nextY)) player.y = nextY;
 
+    
     if (player.x > canvas.width) {
-        if (currentRoom < rooms.length - 1) {
+        if (currentRoom === 0 && typeof room0State !== 'undefined' && room0State.doorLocked) {
+            player.x = canvas.width - player.size - 10;
+            window.messageText = "The door is locked. I need to find a key.";
+            window.messageTimer = 3;
+        } else if (currentRoom < rooms.length - 1) {
             currentRoom++;
             player.x = 30;
         } else {
@@ -124,7 +155,9 @@ function update(deltaTime) {
     } else if (player.x < 0) {
         if (currentRoom > 0) {
             currentRoom--;
-            player.x
+            player.x = canvas.width - 50;
+        } else {
+            player.x = 0;
         }
     }
 
@@ -135,8 +168,10 @@ function draw() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    let room = rooms[currentRoom];
+
     ctx.fillStyle = '#444455';
-    for (let wall of walls) {
+    for (let wall of room.walls) {
         ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
     }
 
@@ -144,40 +179,86 @@ function draw() {
     ctx.fillStyle = player.color;
     ctx.fillRect(player.x, player.y, player.size, player.size);
 
-    ctx.save();
+    if (currentRoom === 0 && room.items) {
+        ctx.fillStyle = '#8888aa';
+        for (let item of room.items) {
+            ctx.fillRect(item.x, item.y, item.width, item.height);
+        }
+    }
 
-    ctx.fillStyle = 'rgba(2, 2, 8, 0.94)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    let activePrompt = "";
+    if (currentRoom === 0 && room.items) {
+        for (let item of room.items) {
+            if (
+                player.x < item.x + item.width + 20 &&
+                player.x + player.size > item.x - 20 &&
+                player.y < item.y + item.height + 20 &&
+                player.y + player.size > item.y - 20
+            ) {
+                activePrompt = 'Press [E] to inspect ${item.label}'
+            }
+        }
+    }
 
-    ctx.globalCompositeOperation = 'lighter';
+    if (activePrompt) {
+        ctx.fillStyle = '#ff5555';
+        ctx.font = '14px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(activePrompt, canvas.width / 2, canvas.height - 40);
+    }
 
-    const lightX = player.x + player.size / 2;
-    const lightY = player.y + player.size / 2;
-    const radius = 240;
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x, player.y, player.size, player.size);
 
-    const gradient = ctx.createRadialGradient(
-        lightX, lightY, 5,
-        lightX, lightY, radius
-    );
+    if (window.messageTimer > 0) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillRect(canvas.width / 2 - 300, canvas.height - 120, 600, 60);
+        ctx.strokeStyle = '#fff';
+        ctx.strokeRect(canvas.width / 2 - 300, canvas.height - 120, 600, 60);
+
+        ctx.fillStyle = '#fff';
+        ctx.font = '15px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(window.messageText, canvas.width / 2, canvas.height - 85);
+
+        window.messageTimer -= 0.016;
+    }
+
+
+   // ctx.save();
+
+    //ctx.fillStyle = 'rgba(2, 2, 8, 0.94)';
+    //ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    //ctx.globalCompositeOperation = 'lighter';
+
+   // const lightX = player.x + player.size / 2;
+   // const lightY = player.y + player.size / 2;
+   // const radius = 240;
+
+   // const gradient = ctx.createRadialGradient(
+   //     lightX, lightY, 5,
+   //     lightX, lightY, radius
+   // );
     
-    gradient.addColorStop(0, 'rgba(255, 255, 220, 1)');
-    gradient.addColorStop(0.2, 'rgba(255, 240, 150, 0.75)');
-    gradient.addColorStop(0.5, 'rgba(200, 180, 80, 0.3)');
-    gradient.addColorStop(0.8, 'rgba(80, 70, 30, 0.08)');
-    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+   // gradient.addColorStop(0, 'rgba(255, 255, 220, 1)');
+   // gradient.addColorStop(0.2, 'rgba(255, 240, 150, 0.75)');
+    //gradient.addColorStop(0.5, 'rgba(200, 180, 80, 0.3)');
+    //gradient.addColorStop(0.8, 'rgba(80, 70, 30, 0.08)');
+   // gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(
-        lightX,
-        lightY,
-        radius,
-        0,
-        Math.PI * 2
-    );
-    ctx.fill();
+    //ctx.fillStyle = gradient;
+    //ctx.beginPath();
+   // ctx.arc(
+   //     lightX,
+   //     lightY,
+   //     radius,
+   //     0,
+   //     Math.PI * 2
+   // );
+   // ctx.fill();
 
-    ctx.restore();
+   //  ctx.restore();
 }
 
 let lastTime = 0;
