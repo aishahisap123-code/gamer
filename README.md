@@ -22,4 +22,4 @@ You can play the current build of the game right here:
 👉 **[[Play The Last Circuit Online](https://aishahisap123-code.github.io/gamer/)**
 
  
- **⚠️ Note:** This game is currently **incomplete** and a work-in-progress! Expect bugs, missing features, and ongoing updates as development continues.
+ **⚠️ Note:** This game is currently **incomplete** and a work-in-progress! Expect missing features, and ongoing updates as development continues.
