@@ -86,7 +86,7 @@ function startGame() {
 }
 window.startGame = startGame;
 
-const rooms = windows.rooms = [
+const rooms = window.rooms = [
 
     {
         walls: [
@@ -349,19 +349,21 @@ function draw() {
         for (let item of room.items) {
 
             if (currentRoom === 1 && typeof room1State != 'undefined') {
-                if (item.id ==  'fuse1' && room1State.hasFuse1) continue;
+                if (item.id === 'fuse1' && room1State.hasFuse1) continue;
                 if (item.id === 'fuse2' && room1State.hasFuse2) continue;
             }
 
+            const padding = 35;
+
             if (
-                player.x < item.x + item.width + 35 &&
-                player.x + player.size > item.x - 35 &&
-                player.y < item.y + item.height + 35 &&
-                player.y + player.size > item.y - -35
+                player.x < item.x + item.width + padding &&
+                player.x + player.size > item.x - padding &&
+                player.y < item.y + item.height + padding &&
+                player.y + player.size > item.y - padding
             ) {
-                let name = item.id.includes('fuse') ? 'Fuse' : (item.id === 'room1Door' ? 'Exit Gate' : 'Fuse Box');
-                activePrompt = `Press [E] to interact with ${name}`;
-                
+
+                let displayName = item.label || item.id;
+                activePrompt = `Press [E] to interact with ${displayName}`;
             }
         }
     }
