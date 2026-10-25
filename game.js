@@ -115,11 +115,49 @@ const rooms = [
             { x: canvas.width - 20, y: 0, width: 20, height: 220 },
             { x: canvas.width - 20, y: 320, width: 20, height: canvas.height - 320},
 
-            { x: 0, y: 0, width: 1707, height: 20 },
-            { x: 0, y: 940, width: 1707, height: 20 },
-            { x: 0, y: 0, width: 20, height: 380 },
-            { x: 0, y: 540, width: 20, height: 420 },
             
+            { x: 181, y: 14, width: 31, height: 150 },
+            { x: 221, y: 282, width: 257, height: 25 },
+            { x: 367, y: 14, width: 31, height: 268 },
+            { x: 195, y: 589, width: 215, height: 34 },
+            { x: 350, y: 617, width: 20, height: 155 },
+            { x: 147, y: 716, width: 209, height: 25 },
+            { x: 263, y: 739, width: 26, height: 136 },
+            { x: 271, y: 854, width: 209, height: 20 },
+            { x: 531, y: 499, width: 20, height: 141 },
+            { x: 1466, y: 302, width: 149, height: 20 },
+            { x: 1557, y: 744, width: 28, height: 199 },
+            { x: 1249, y: 539, width: 20, height: 404 },
+            { x: 982, y: 769, width: 34, height: 155 },
+            { x: 663, y: 671, width: 30, height: 281 },
+            { x: 606, y: 12, width: 28, height: 319 },
+            { x: 829, y: 20, width: 20, height: 86 },
+            { x: 1131, y: 14, width: 28, height: 265 },
+            { x: 1348, y: 20, width: 28, height: 319 },
+            { x: 303, y: 296, width: 20, height: 171 },
+            { x: 96, y: 416, width: 207, height: 28 },
+            { x: 371, y: 689, width: 223, height: 22 },
+            { x: 789, y: 338, width: 30, height: 249 },
+            { x: 1034, y: 181, width: 22, height: 165 },
+            { x: 624, y: 255, width: 217, height: 20 },
+            { x: 606, y: 482, width: 197, height: 22 },
+            { x: 693, y: 844, width: 205, height: 22 },
+            { x: 1054, y: 468, width: 20, height: 193 },
+            { x: 1420, y: 553, width: 20, height: 120 },
+            { x: 882, y: 571, width: 177, height: 28 },
+            { x: 886, y: 589, width: 20, height: 269 },
+            { x: 1092, y: 780, width: 165, height: 24 },
+            { x: 1187, y: 336, width: 191, height: 32 },
+            { x: 1546, y: 318, width: 26, height: 189 },
+            { x: 1538, y: 259, width: 167, height: 24 },
+            { x: 550, y: 808, width: 114, height: 20 },
+            { x: 462, y: 125, width: 155, height: 22 },
+            { x: 928, y: 253, width: 118, height: 20 },
+            { x: 1080, y: 506, width: 92, height: 20 },
+            { x: 1267, y: 858, width: 241, height: 20 },
+            { x: 1267, y: 858, width: 241, height: 22 },
+            { x: 1378, y: 731, width: 24, height: 135 }
+
 
             
         ],
@@ -307,18 +345,29 @@ function draw() {
     // ctx.restore();
 
     let activePrompt = "";
-    if (currentRoom === 0 && room.items) {
+    if (room.items) {
         for (let item of room.items) {
+
+            if (currentRoom === 1 && typeof room1State != 'undefined') {
+                if (item.id ==  'fuse1' && room1State.hasFuse1) continue;
+                if (item.id === 'fuse2' && room1State.hasFuse2) continue;
+            }
+
             if (
-                player.x < item.x + item.width + 20 &&
-                player.x + player.size > item.x - 20 &&
-                player.y < item.y + item.height + 20 &&
-                player.y + player.size > item.y - 20
+                player.x < item.x + item.width + 35 &&
+                player.x + player.size > item.x - 35 &&
+                player.y < item.y + item.height + 35 &&
+                player.y + player.size > item.y - -35
             ) {
-                activePrompt = `Press [E] to inspect ${item.label || 'Item'}`
+                let name = item.id.includes('fuse') ? 'Fuse' : (item.id === 'room1Door' ? 'Exit Gate' : 'Fuse Box');
+                activePrompt = `Press [E] to interact with ${name}`;
+                
             }
         }
     }
+    
+
+
 
     if (activePrompt) {
         ctx.fillStyle = '#ff5555';
