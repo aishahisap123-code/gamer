@@ -5,6 +5,22 @@ const room0State = {
     hasKey: false
 };
 
+const passInput = document.getElementById('passcodeInput');
+if (passInput) {
+    passInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            submitCode();
+        }
+    });
+}
+
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'Escape') {
+        closeNote();
+        closeKeypad();
+    }
+});
+
 function handleRoom0Interaction() {
 
     const room0Items = [
@@ -69,7 +85,7 @@ function openNote(title, text) {
 }
 
 function closeNote() {
-    document.getElementById('notModal').style.display = 'none';
+    document.getElementById('noteModal').style.display = 'none';
 }
 
 function closeKeypad() {
@@ -77,7 +93,7 @@ function closeKeypad() {
 }
 
 function submitCode() {
-    let inputVal = document.getElementById('passcodeIput').ariaValueMax;
+    let inputVal = document.getElementById('passcodeInput').value;
     if (inputVal === '482') {
         room0State.passcodeSolved = true;
         window.messageText = "Correct code! A hidden component clicked open in the dark corner.";
@@ -88,3 +104,15 @@ function submitCode() {
         window.messageTimer = 4;
     }
 }
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const passInput = document.getElementById('passcodeInput');
+    if (passInput) {
+        passInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                submitCode();
+            }
+        });
+    }
+});

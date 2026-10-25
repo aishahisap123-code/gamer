@@ -17,6 +17,8 @@ window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyE') {
         if (currentRoom === 0 && typeof handleRoom0Interaction ==='function') {
             handleRoom0Interaction();
+        } else if (currentRoom === 1 && typeof handleRoom1Interaction === 'function') {
+            handleRoom1Interaction();
         }
     }
 });
@@ -48,6 +50,42 @@ window.player = player;
 
 let currentRoom = 0;
 
+let gameStarted = false;
+
+let scareActive = false;
+let scareTimer = 0;
+let scareText = "";
+
+function triggerJumpScare(text, duration = 0.4) {
+    scareActive = true;
+    scareTimer = duration;
+    scareText = text;
+}
+
+function drawScareOverley() {
+    if (scareActive && scareTimer > 0) {
+        ctx.fillStyle = Math.random() > 0.5 ? 'rgba(180, 0, 0, 0.95)' : 'rgba(0, 0, 0, 0.98)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 36px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(scareText, canvas.width / 2, canvas.height / 2);
+
+        scareTimer -= 0.016;
+        if (scareTimer <= 0) {
+            scareActive = false;
+        }
+    }
+}
+
+function startGame() {
+    document.getElementById('startScreen').style.display = 'none';
+    gameStarted = true;
+    lastTime = performance.now();
+}
+window.startGame = startGame;
+
 const rooms = [
 
     {
@@ -72,12 +110,25 @@ const rooms = [
         walls: [
             { x: 0, y: 0, width: canvas.width, height: 20 },
             { x: 0, y: canvas.height - 20, width: canvas.width, height: 20 },
-            { x: 0, y: 0, width: 20, height: 250 },
-            { x: 0, y: 350, width: 20, height: canvas.height - 350 },
+            { x: 0, y: 0, width: 20, height: 220 },
+            { x: 0, y: 320, width: 20, height: canvas.height - 320 },
+            { x: canvas.width - 20, y: 0, width: 20, height: 220 },
+            { x: canvas.width - 20, y: 320, width: 20, height: canvas.height - 320},
 
-            { x: canvas.width - 20, y: 0, width: 20, height: 250 },
-            { x: canvas.width - 20, y: 350, width: 20, height: canvas.height - 350 },
-            { x: 200, y: 100, width: 30, height: 400 }
+            { x: 0, y: 0, width: 1707, height: 20 },
+            { x: 0, y: 940, width: 1707, height: 20 },
+            { x: 0, y: 0, width: 20, height: 380 },
+            { x: 0, y: 540, width: 20, height: 420 },
+            
+
+            
+        ],
+
+        items: [
+            { id: 'fuse1', x: 60, y: 520, width: 35, height: 35 },
+            { id: 'fuse2', x: 530, y: 40, width: 35, height: 35 },
+            { id: 'fuseBox', x: 780, y: 520, width: 45, height: 45 },
+            { id: 'room1Door', x: canvas.width - 40, y: 220, width: 40, height: 100 }
         ]
     },
 
@@ -146,6 +197,11 @@ function update(deltaTime) {
             player.x = canvas.width - player.size - 10;
             window.messageText = "The door is locked. I need to find a key.";
             window.messageTimer = 3;
+
+        } else if (currentRoom === 1 && typeof room1State !== 'undefined' && !room1State.powerRestored) {
+            player.x = canvas.width - player.size - 10;
+            window.messageText = "The heavy electric gate is dead. Restore power at the fuse box.";
+            window.messageTimer = 3;
         } else if (currentRoom < rooms.length - 1) {
             currentRoom++;
             player.x = 30;
@@ -179,12 +235,76 @@ function draw() {
     ctx.fillStyle = player.color;
     ctx.fillRect(player.x, player.y, player.size, player.size);
 
+
+
+    
     if (currentRoom === 0 && room.items) {
         ctx.fillStyle = '#8888aa';
         for (let item of room.items) {
             ctx.fillRect(item.x, item.y, item.width, item.height);
         }
     }
+
+    const currentRoomData = rooms[currentRoom];
+    if (currentRoomData && currentRoomData.items) {
+        for (let item of currentRoomData.items) {
+
+            if (currentRoom === 1 && typeof room1State != 'undefined') {
+                if (item.id === 'fuse1' && room1State.hasFuse1) continue;
+                if (item.id === 'fuse2' && room1State.hasFuse2) continue;
+            }
+
+            if (item.id.includes('fuse')) {
+                ctx.fillStyle = '#ffaa00';
+            } else if (item.id === 'fuseBox') {
+                ctx.fillStyle = '#444444';
+            } else if (item.id.includes('Door')) {
+                ctx.fillStyle = '#662222';
+            } else {
+                ctx.fillStyle = '#888888';
+            }
+
+            ctx.fillRect(item.x, item.y, item.width, item.height);
+
+            ctx.strokeStyle = '#ffffff';
+            ctx.strokeRect(item.x, item.y, item.width, item.height);
+        }
+    }
+
+// ctx.save();
+
+   // ctx.fillStyle = 'rgba(2, 2, 8, 0.94)';
+    //ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+   // ctx.globalCompositeOperation = 'lighter';
+
+   // const lightX = player.x + player.size / 2;
+   // const lightY = player.y + player.size / 2;
+   // const radius = 240;
+
+   // const gradient = ctx.createRadialGradient(
+   //     lightX, lightY, 5,
+   //     lightX, lightY, radius
+   // );
+    
+   // gradient.addColorStop(0, 'rgba(255, 255, 220, 1)');
+   // gradient.addColorStop(0.2, 'rgba(255, 240, 150, 0.75)');
+  //  gradient.addColorStop(0.5, 'rgba(200, 180, 80, 0.3)');
+   // gradient.addColorStop(0.8, 'rgba(80, 70, 30, 0.08)');
+  //  gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+////
+   // ctx.fillStyle = gradient;
+   // ctx.beginPath();
+   // ctx.arc(
+   //     lightX,
+   //     lightY,
+   //     radius,
+   //     0,
+   //     Math.PI * 2
+   // );
+   // ctx.fill();
+
+    // ctx.restore();
 
     let activePrompt = "";
     if (currentRoom === 0 && room.items) {
@@ -195,7 +315,7 @@ function draw() {
                 player.y < item.y + item.height + 20 &&
                 player.y + player.size > item.y - 20
             ) {
-                activePrompt = 'Press [E] to inspect ${item.label}'
+                activePrompt = `Press [E] to inspect ${item.label || 'Item'}`
             }
         }
     }
@@ -224,49 +344,22 @@ function draw() {
         window.messageTimer -= 0.016;
     }
 
-
-   // ctx.save();
-
-    //ctx.fillStyle = 'rgba(2, 2, 8, 0.94)';
-    //ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    //ctx.globalCompositeOperation = 'lighter';
-
-   // const lightX = player.x + player.size / 2;
-   // const lightY = player.y + player.size / 2;
-   // const radius = 240;
-
-   // const gradient = ctx.createRadialGradient(
-   //     lightX, lightY, 5,
-   //     lightX, lightY, radius
-   // );
     
-   // gradient.addColorStop(0, 'rgba(255, 255, 220, 1)');
-   // gradient.addColorStop(0.2, 'rgba(255, 240, 150, 0.75)');
-    //gradient.addColorStop(0.5, 'rgba(200, 180, 80, 0.3)');
-    //gradient.addColorStop(0.8, 'rgba(80, 70, 30, 0.08)');
-   // gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
-    //ctx.fillStyle = gradient;
-    //ctx.beginPath();
-   // ctx.arc(
-   //     lightX,
-   //     lightY,
-   //     radius,
-   //     0,
-   //     Math.PI * 2
-   // );
-   // ctx.fill();
 
-   //  ctx.restore();
+   
 }
 
 let lastTime = 0;
 function gameLoop(timestamp) {
     const deltaTime = (timestamp - lastTime) / 1000 || 0;
     lastTime = timestamp;
-    update(deltaTime);
-    draw();
+
+    if (gameStarted) {
+        update(deltaTime);
+        draw();
+    }
+    
     requestAnimationFrame(gameLoop);
 }
 
