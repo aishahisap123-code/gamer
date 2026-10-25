@@ -86,7 +86,7 @@ function startGame() {
 }
 window.startGame = startGame;
 
-const rooms = [
+const rooms = windows.rooms = [
 
     {
         walls: [
@@ -309,40 +309,40 @@ function draw() {
         }
     }
 
-// ctx.save();
+ ctx.save();
 
-   // ctx.fillStyle = 'rgba(2, 2, 8, 0.94)';
-    //ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'rgba(2, 2, 8, 0.94)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-   // ctx.globalCompositeOperation = 'lighter';
+    ctx.globalCompositeOperation = 'lighter';
 
-   // const lightX = player.x + player.size / 2;
-   // const lightY = player.y + player.size / 2;
-   // const radius = 240;
+    const lightX = player.x + player.size / 2;
+    const lightY = player.y + player.size / 2;
+    const radius = 240;
 
-   // const gradient = ctx.createRadialGradient(
-   //     lightX, lightY, 5,
-   //     lightX, lightY, radius
-   // );
+    const gradient = ctx.createRadialGradient(
+        lightX, lightY, 5,
+        lightX, lightY, radius
+    );
     
-   // gradient.addColorStop(0, 'rgba(255, 255, 220, 1)');
-   // gradient.addColorStop(0.2, 'rgba(255, 240, 150, 0.75)');
-  //  gradient.addColorStop(0.5, 'rgba(200, 180, 80, 0.3)');
-   // gradient.addColorStop(0.8, 'rgba(80, 70, 30, 0.08)');
-  //  gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-////
-   // ctx.fillStyle = gradient;
-   // ctx.beginPath();
-   // ctx.arc(
-   //     lightX,
-   //     lightY,
-   //     radius,
-   //     0,
-   //     Math.PI * 2
-   // );
-   // ctx.fill();
+    gradient.addColorStop(0, 'rgba(255, 255, 220, 1)');
+    gradient.addColorStop(0.2, 'rgba(255, 240, 150, 0.75)');
+    gradient.addColorStop(0.5, 'rgba(200, 180, 80, 0.3)');
+    gradient.addColorStop(0.8, 'rgba(80, 70, 30, 0.08)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
-    // ctx.restore();
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(
+        lightX,
+        lightY,
+        radius,
+        0,
+        Math.PI * 2
+    );
+    ctx.fill();
+
+     ctx.restore();
 
     let activePrompt = "";
     if (room.items) {
